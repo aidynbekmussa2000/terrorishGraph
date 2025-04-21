@@ -9,13 +9,31 @@ st.set_page_config(page_title="TerrorGraph", layout="wide")
 # ----------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("terror_data_final_for_neo4j.csv", low_memory=False)
-    df = df[df['iyear'].notna()]
-    df['imonth'] = df['imonth'].fillna(1).astype(int)
-    df['iday'] = df['iday'].fillna(1).astype(int)
-    df['iyear'] = df['iyear'].astype(int)
-    df['date'] = pd.to_datetime(dict(year=df['iyear'], month=df['imonth'], day=df['iday']), errors='coerce')
-    return df.dropna(subset=['date'])
+    # Connect to your Neo4j Aura DB
+    graph = Graph("neo4j+s://e05f068d.databases.neo4j.io", auth=("neo4j", "your-password"))
+
+    # Run Cypher query to fetch data
+    query = """
+    MATCH (e:Event)
+    RETURN
+        e.year AS year,
+        e.group AS gname,
+        e.country AS country_txt,
+        e.city AS city,
+        e.attack_type AS attacktype1_txt,
+        e.nkill AS nkill,
+        e.nwound AS nwound
+    """
+
+    df = graph.run(query).to_data_frame()
+    df['iyear'] = df['year'].astype(int)
+
+    # Optional cleaning
+    df['nkill'] = df['nkill'].fillna(0)
+    df['nwound'] = df['nwound'].fillna(0)
+    df['summary'] = ""  # if needed for keyword search fallback
+
+    return df
 
 df = load_data()
 

@@ -3,3 +3,4 @@ pandas
 numpy
 plotly
 Graph
+py2neo

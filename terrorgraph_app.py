@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from py2neo import Graph
+
 
 st.set_page_config(page_title="TerrorGraph", layout="wide")
 
@@ -10,7 +12,7 @@ st.set_page_config(page_title="TerrorGraph", layout="wide")
 @st.cache_data
 def load_data():
     # Connect to your Neo4j Aura DB
-    graph = Graph("neo4j+s://e05f068d.databases.neo4j.io", auth=("neo4j", "your-password"))
+    graph = Graph("neo4j+s://4a60a978.databases.neo4j.io", auth=("neo4j", "NjIZ5vL8gkA5A8QJwfa1odhPuxVP6ZjSoD0dazWPtE0"))
 
     # Run Cypher query to fetch data
     query = """
@@ -29,6 +31,9 @@ def load_data():
     df['iyear'] = df['year'].astype(int)
 
     # Optional cleaning
+    df['imonth'] = 1  # default values unless you store actual months
+    df['iday'] = 1
+    df['date'] = pd.to_datetime(dict(year=df['iyear'], month=df['imonth'], day=df['iday']), errors='coerce')
     df['nkill'] = df['nkill'].fillna(0)
     df['nwound'] = df['nwound'].fillna(0)
     df['summary'] = ""  # if needed for keyword search fallback
